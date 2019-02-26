@@ -1,0 +1,137 @@
+# 
+# Venn diagrams
+# 
+# This script creates venn diagrams. 
+# The maximum number of caterories is 5.
+# 
+# This script read csv files and export a jpeg file 
+# 
+# Authors:
+# -Evangelos Chandakas
+# 
+# Date:
+# -20/11/2018
+#
+# Last update:
+# -25/2/2019
+# 
+# THCCG
+######################
+
+# STEP 1 
+#add here the CSV file without the type of the file at the end. 
+#eg. My file has name:  NameOfCSVFile.csv  
+#in this case I need to add to the variable name.of.file the following "NameOfCSVFile"  
+#name.of.file<- "NameOfCSVFile"
+name.of.file<- "VennDiagram Smoking TH"
+
+# STEP 2 
+# select the folder that you have the input data (the csv file of step 1)
+select_folder <-"N:/TowerHamletsCCG/NHSTHCCG/Financial strategy/Analysis/THT - Vanguard/Mental and physical health links"
+
+# STEP 3
+# give a title to the figure
+main_title = "This is the title"
+
+# STEP 4
+# select the folder that you want save the figure (Venn diagram)
+select_folder_to_save <-"N:/TowerHamletsCCG/NHSTHCCG/Financial strategy/Analysis/THT - Vanguard/Mental and physical health links"
+
+# STEP 5
+# this variable gives a name to you exporting variable
+analysis_name= 'Analysis_name'
+
+# STEP 6
+# Give a title to the Diagram
+main_title = "This is the title"
+
+# STEP 7 
+# add the size of text  (zero remove labels)
+# Text size of main title
+maincex = 1
+# Text size of Conditions title
+subcex = 1
+# Text size of category labels
+catcex = 1
+
+##############################################################
+##############################################################
+###DO NOT EDIT################################################
+
+plot_venns <- function (main_title,name.of.file, select_folder, analysis_name,select_folder_to_save, 
+                        maincex=1, subcex = 1,cexg = 0.8,catcex = 0.8 ){
+
+  #install.packages('VennDiagram')
+  library(VennDiagram)
+  #strptime(x, "%m/%d/%y %H:%M:%S")
+  str1 =format(Sys.time(), "%a%b%d%X%Y")
+  
+  library(lubridate)
+  #format(ymd_hms(str1), "%H:%M:%S")
+  
+  timestamp <- function (){
+    x  = strptime(Sys.time(), format = '%Y-%m-%d %H:%M:%S', 'GMT')
+    x  = format(x,"%Y%m%d_%H%M%S")
+    return (x)
+  }
+  
+  x = strptime('2001-01-01 09:14:00', format = '%Y-%m-%d %H:%M', 'GMT')
+  x  = format(x,"%Y%m%d_%H%M%S")
+  ###########################file 1
+  
+  file.name.of.file <- paste(name.of.file,"csv",sep=".")
+  selectedFile= paste(select_folder,file.name.of.file, sep="/" )
+  ###########################USER ---end
+  selected_data <- read.csv(selectedFile, header=TRUE, sep=",")
+  
+  selected_columns = colnames(selected_data)
+  for (i_column in selected_columns){
+    selected_data[,i_column]
+  }
+  #####SAVE FILE
+  
+  select_folder_results = paste(select_folder_to_save,sep="")
+  #dir.create(select_folder_results, showWarnings = FALSE)
+  
+  new_folder = paste(analysis_name,timestamp(),sep="")
+  select_folder_new = paste(select_folder_results, "/",new_folder,sep="")
+  dir.create(select_folder_new, showWarnings = FALSE)
+  ################
+  for(i in 1:ncol(selected_data)){
+    selected_data[is.na(selected_data[,i]), i] <-  selected_data[1,i]}
+ 
+  venn_list <- as.list(selected_data)
+  names_vector = names(venn_list)
+  sub_title = "Conditions:"
+  for (j in names_vector){
+    sub_title = paste(sub_title, j, sep=" - ")
+  }
+  
+  sub_title = gsub('\\.', ' ', sub_title)
+  
+  jpeg(paste(select_folder_new, "/", main_title,"_",timestamp(),"_",str(i),"_",".jpg", sep=""), quality = 100, bg = "white", res = 400, width = 7, height = 7, units = "in")
+  vp <- venn.diagram(venn_list,
+         
+                     fill = 1:length(venn_list), alpha = 0.2, filename = NULL
+                     ,offset=1,
+                     ext.text = TRUE,
+                     ext.line.lwd = 2,
+                     ext.dist = -0.15,
+                     ext.length = 0.9,
+                     ext.pos = -4,
+                     inverted = TRUE,
+                     rotation.degree = 45,
+                     main = main_title,
+                     sub = sub_title  ,
+                     main.cex = maincex,
+                     sub.cex = subcex,
+                     cex = subcex,
+                     cat.cex = catcex,
+                     cat.fontface = "bold",
+                     margin = 0.01);
+  grid.draw(vp)
+ dev.off()
+}
+
+plot_venns(main_title,name.of.file, select_folder, analysis_name,select_folder_to_save,maincex, subcex ,cexg ,catcex)
+
